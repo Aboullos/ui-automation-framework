@@ -1,0 +1,38 @@
+{
+  "name": "seleniumtypescript",
+  "version": "1.0.0",
+  "description": "PoC Selenium with Typescript",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/_mocha lib/test/**/*.js --reporter mochawesome --reporter-options reportDir=TestResults"
+  },
+  "resolutions": {
+    "graceful-fs": "^4.2.4"
+  },
+  "keywords": [
+    "typescript",
+    "mocha",
+    "node",
+    "chai",
+    "mochawesome",
+    "gulp"
+  ],
+  "dependencies": {
+    "@types/selenium-webdriver": "^4.0.9",
+    "typescript": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.5",
+    "@types/mocha": "^2.2.44",
+    "@types/node": "^12.12.68",
+    "@types/webdriverio": "^4.13.3",
+    "chai": "^4.1.2",
+    "del": "^3.0.0",
+    "graceful-fs": "^4.2.4",
+    "gulp": "^3.9.1",
+    "gulp-typescript": "^3.2.3",
+    "mocha": "^4.0.1",
+    "mochawesome": "^2.3.1",
+    "selenium-webdriver": "^3.0.1"
+  }
+}
