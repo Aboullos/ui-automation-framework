@@ -1,0 +1,4 @@
+{
+    "keycloak_url": "http://localhost:8080",
+    "admin_console_path": ""
+}

@@ -15,9 +15,10 @@
                 "-u", "tdd",
                 "--no-timeouts",
                 "--colors",
+                "--resolveJsonModule",
                 "--reporter", "mochawesome", 
                 "--reporter-options", "reportDir=TestResults",
-                "${workspaceFolder}/lib/test" //you can specify paths to specific tests here
+                "${workspaceFolder}/lib/tests" //you can specify paths to specific tests here
             ],
             "internalConsoleOptions": "openOnSessionStart"
         }

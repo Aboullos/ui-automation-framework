@@ -1,11 +1,16 @@
 import { By }  from 'selenium-webdriver';
-import { DriverExt } from "./DriverExt";
+import { DriverExt } from "./webdriver/DriverExt";
+import { TestObject } from "./TestObject";
 
 export class PageObject {
 
-    driver: DriverExt;
+    protected properties: any;
+    protected driver: DriverExt;
+    protected testObject: TestObject;
 
-    constructor(driver: DriverExt) {
-        this.driver = driver;
+    constructor(testObject: TestObject) {
+        this.testObject = testObject;
+        this.driver = testObject.getDriver();
+        this.properties = testObject.getProperties();
     }
 }
