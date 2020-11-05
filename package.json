@@ -4,7 +4,7 @@
   "description": "PoC Selenium with Typescript",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/_mocha lib/test/**/*.js --reporter mochawesome --reporter-options reportDir=TestResults"
+    "test": "npx tsc && ./node_modules/mocha/bin/_mocha lib/tests/**/*.test.js --reporter mochawesome --reporter-options reportDir=reports --no-timeouts"
   },
   "resolutions": {
     "graceful-fs": "^4.2.4"
@@ -14,8 +14,7 @@
     "mocha",
     "node",
     "chai",
-    "mochawesome",
-    "gulp"
+    "mochawesome"
   ],
   "dependencies": {
     "@types/selenium-webdriver": "^4.0.9",
@@ -29,8 +28,6 @@
     "chai": "^4.1.2",
     "del": "^3.0.0",
     "graceful-fs": "^4.2.4",
-    "gulp": "^3.9.1",
-    "gulp-typescript": "^3.2.3",
     "mocha": "^4.0.1",
     "mochawesome": "^2.3.1",
     "selenium-webdriver": "^3.0.1"

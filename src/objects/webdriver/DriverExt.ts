@@ -1,5 +1,6 @@
 import { exception } from 'console';
 import * as fs from 'fs';
+import { properties } from "./../../Constants";
 import { By }  from 'selenium-webdriver';
 import * as webdriver from 'selenium-webdriver';
 import * as Constants from "../../Constants";
@@ -457,7 +458,7 @@ export class DriverExt {
     //#endregion
 
     async takeScreenshot(screenshotName: string = new Date().getTime().toString()) {
-        let screenshotsFolder = "TestResults/screenshots";
+        let screenshotsFolder = "./" + properties.reports_folder + "/" + properties.screenshots_folder;
 
         if (!fs.existsSync(screenshotsFolder)){
             fs.mkdirSync(screenshotsFolder);

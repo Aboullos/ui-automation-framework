@@ -5,6 +5,7 @@ import { TestObject } from "../src/objects/TestObject";
 import * as Constants from "../src/Constants";
 import { HeaderPage } from './pages/admin_console/HeaderPage';
 import { Steps } from './steps/Steps';
+import { doesNotReject } from 'assert';
 
 should();
 
@@ -53,6 +54,6 @@ describe('Selenium Demo Test Suite', function () {
     });
     
     afterEach(async function () {
-        testObject.handleTestEnd(this.currentTest.title, this.currentTest.state);
+        await testObject.handleTestEnd(this.currentTest.title, this.currentTest.state);
     });
 });

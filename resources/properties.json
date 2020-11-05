@@ -1,4 +1,6 @@
 {
     "keycloak_url": "http://localhost:8080",
-    "admin_console_path": ""
+    "admin_console_path": "",
+    "screenshots_folder": "screenshots",
+    "reports_folder": "reports"
 }
