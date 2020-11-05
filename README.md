@@ -3,10 +3,9 @@
 #### To run this code:
 1. Go to project root folder
 2. npm install (downloads node dependencies)
-3. npm install @types/node@v12 --save-dev
-4. Be sure to have the correct version of chromedriver in the root folder
-5. code . (opens project in VS Code)
-6. F5 (runs VS code launch task) 
+3. Be sure to have the correct version of chromedriver in the root folder
+4. code . (opens project in VS Code)
+5. F5 (runs VS code launch task) 
 
 #### Tools, Libraries, Frameworks used:
 1. Coding Typescript.
