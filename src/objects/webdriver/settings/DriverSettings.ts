@@ -1,13 +1,12 @@
-import * as webdriver from 'selenium-webdriver';
-import * as Constants from "../../../Constants";
+import { Builder, Capabilities } from 'selenium-webdriver';
 
 export class DriverSettings {
     
-    builder: webdriver.Builder;
-    capabilities: webdriver.Capabilities;
+    builder: Builder;
+    capabilities: {} | Capabilities;
 
     protected createBuilder() {
-        this.builder = new webdriver.Builder()
+        this.builder = new Builder()
             .withCapabilities(this.capabilities);
     }
 

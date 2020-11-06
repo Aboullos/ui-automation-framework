@@ -4,3 +4,4 @@ reports/
 .vscode
 chromedriver
 geckodriver
+yarn-error.log

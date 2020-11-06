@@ -23,6 +23,10 @@ export class TestObject {
         this.driver = driver;
     }
 
+    setDriverPlatform(platform: string) {
+        this.driver.setPlatform(platform);
+    }
+
     setHeadlessDriver(value: boolean) {
         this.driver.setHeadless(value);
     }

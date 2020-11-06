@@ -1,8 +1,7 @@
 import { exception } from 'console';
 import * as fs from 'fs';
 import { properties } from "./../../Constants";
-import { By }  from 'selenium-webdriver';
-import * as webdriver from 'selenium-webdriver';
+import { Capabilities, WebDriver, By, WebElement, Condition, until } from 'selenium-webdriver';
 import * as Constants from "../../Constants";
 import { DriverSettings } from './settings/DriverSettings';
 import { ChromeSettings } from './settings/ChromeSettings';
@@ -10,6 +9,7 @@ import { EdgeSettings } from './settings/EdgeSettings';
 import { FirefoxSettings } from './settings/FirefoxSettings';
 import { IESettings } from './settings/IESettings';
 import { SafariSettings } from './settings/SafariSettings';
+import { AndroidSettings } from './settings/AndroidSettings';
 
 export class DriverExt {
 
@@ -26,8 +26,8 @@ export class DriverExt {
     private checkForAngular: boolean = true;
     private checkForPageToLoad: boolean = true;
 
-    private driver: webdriver.WebDriver;
-    private capabilities: webdriver.Capabilities;
+    private driver: WebDriver;
+    private capabilities: Capabilities;
 
     constructor(application: string, platform: string = Constants.DESKTOP) {
         this.application = application;
@@ -57,16 +57,21 @@ export class DriverExt {
     createSetting() {
         let driverSettings: DriverSettings;
     
-        if(this.application.toLowerCase() == Constants.CHROME) {
-            driverSettings = new ChromeSettings();
-        } else if(this.application.toLowerCase() == Constants.FIREFOX) {
-            driverSettings = new FirefoxSettings();
-        } else if(this.application.toLowerCase() == Constants.SAFARI) {
-            driverSettings = new SafariSettings();
-        } else if(this.application.toLowerCase() == Constants.IE) {
-            driverSettings = new IESettings();
-        } else if(this.application.toLowerCase() == Constants.EDGE) {
-            driverSettings = new EdgeSettings();
+        if(this.platform == Constants.DESKTOP) {
+            if(this.application.toLowerCase() == Constants.CHROME) {
+                driverSettings = new ChromeSettings();
+            } else if(this.application.toLowerCase() == Constants.FIREFOX) {
+                driverSettings = new FirefoxSettings();
+            } else if(this.application.toLowerCase() == Constants.SAFARI) {
+                driverSettings = new SafariSettings();
+            } else if(this.application.toLowerCase() == Constants.IE) {
+                driverSettings = new IESettings();
+            } else if(this.application.toLowerCase() == Constants.EDGE) {
+                driverSettings = new EdgeSettings();
+            }
+        } else if(this.platform == Constants.ANDROID 
+            && [Constants.CHROME, Constants.FIREFOX].indexOf(this.application) > -1) {
+            driverSettings = new AndroidSettings(this.application);
         }
     
         return driverSettings;
@@ -98,6 +103,10 @@ export class DriverExt {
     //#region Basic setters
     setHubUrl(url: string) {
         this.hub_url = url;
+    }
+
+    setPlatform(platform: string) {
+        this.platform = platform;
     }
 
     setHeadless(value: boolean) {
@@ -157,7 +166,9 @@ export class DriverExt {
     }
 
     async maximizeWindow() {
-        await this.driver.manage().window().maximize();
+        if(this.platform == Constants.DESKTOP && !this.emulation_device) {
+            await this.driver.manage().window().maximize();
+        }
     }
 
     async executeJavascript(script: string, ...args: any[]) {
@@ -170,19 +181,19 @@ export class DriverExt {
     //#endregion
 
     //#region WebElement getters
-    async getElement(element: webdriver.By | webdriver.WebElement) {
-        if(element instanceof webdriver.By) {
-            element = await this.driver.findElement(element as webdriver.By)
+    async getElement(element: By | WebElement) {
+        if(element instanceof By) {
+            element = await this.driver.findElement(element as By)
         }
 
         return element;
     }
 
-    async getElements(by: webdriver.By) {
+    async getElements(by: By) {
         return await this.driver.findElements(by);
     }
 
-    async getElementChildByText(element: webdriver.By, text: string) {
+    async getElementChildByText(element: By, text: string) {
         let listElement = await this.driver.findElement(element);
 
         this.setTimeouts(3000);
@@ -192,7 +203,7 @@ export class DriverExt {
         return result;
     }
 
-    async getElementChildByAttribute(element: webdriver.By, attribute: string, value: string) {
+    async getElementChildByAttribute(element: By, attribute: string, value: string) {
         let listElement = await this.driver.findElement(element);
 
         this.setTimeouts(3000);
@@ -202,37 +213,37 @@ export class DriverExt {
         return result;
     }
 
-    async getElementChildByAttributeContaining(element: webdriver.By, attribute: string, value: string) {
+    async getElementChildByAttributeContaining(element: By, attribute: string, value: string) {
         let listElement = await this.driver.findElement(element)
 
         return await listElement.findElement(By.css("[" + attribute + "*='" + value + "')]"));
     }
 
-    async getAttribute(element: webdriver.By | webdriver.WebElement, attribute: string) {
+    async getAttribute(element: By | WebElement, attribute: string) {
         return await (await this.getElement(element)).getAttribute(attribute)
     }
 
-    async getElementLocation(element: webdriver.By | webdriver.WebElement) {
+    async getElementLocation(element: By | WebElement) {
         return await (await this.getElement(element)).getLocation();
     }
 
-    async getElementSize(element: webdriver.By | webdriver.WebElement) {
+    async getElementSize(element: By | WebElement) {
         return await (await this.getElement(element)).getSize();
     }
     //#endregion
 
     //#region WebElement setters
-    async setAttribute(element: webdriver.By | webdriver.WebElement, attribute: string, value: string) {
+    async setAttribute(element: By | WebElement, attribute: string, value: string) {
         await this.driver.executeScript("arguments[0].setAttribute(arguments[1], arguments[2])", 
             await this.getElement(element), attribute, value);
     }
 
-    async removeAttribute(element: webdriver.By | webdriver.WebElement, attribute: string) {
+    async removeAttribute(element: By | WebElement, attribute: string) {
         await this.driver.executeScript("arguments[0].removeAttribute(arguments[1], arguments[2])",
             await this.getElement(element), attribute);
     }
 
-    async removeElement(element: webdriver.By | webdriver.WebElement) {
+    async removeElement(element: By | WebElement) {
         await this.driver.executeScript("arguments[0].remove()", await this.getElement(element));
     }
     //#endregion
@@ -268,7 +279,7 @@ export class DriverExt {
     //#endregion
 
     //#region Click methods
-    async click(element: webdriver.By | webdriver.WebElement) {
+    async click(element: By | WebElement) {
         element = await this.waitForElementToBeClickable(element);
         
         await element.click();
@@ -276,13 +287,13 @@ export class DriverExt {
         await this.waitForLoadToComplete();
     }
 
-    async clickElementChildByText(element: webdriver.By, text: string) {
+    async clickElementChildByText(element: By, text: string) {
         (await this.getElementChildByText(element, text)).click();
 
         await this.waitForLoadToComplete();
     }
 
-    async clickOver(element: webdriver.By | webdriver.WebElement) {
+    async clickOver(element: By | WebElement) {
         await this.driver.executeScript(
             "document.elementFromPoint(" 
             + "arguments[0].getBoundingClientRect().x, "
@@ -294,22 +305,22 @@ export class DriverExt {
     //#endregion
 
     //#region Text methods
-    async getText(element: webdriver.By | webdriver.WebElement) {
+    async getText(element: By | WebElement) {
         return await (await this.getElement(element)).getText();
     }
     
-    async writeText(element: webdriver.By | webdriver.WebElement, text: string) {
+    async writeText(element: By | WebElement, text: string) {
         await (await this.getElement(element)).sendKeys(text);
 
         await this.waitForLoadToComplete();
     }
     
-    async setText(element: webdriver.By | webdriver.WebElement, text: string) {
+    async setText(element: By | WebElement, text: string) {
         await this.clearText(element);
         await this.writeText(element, text);
     }
     
-    async clearText(element: webdriver.By | webdriver.WebElement) {
+    async clearText(element: By | WebElement) {
         await (await this.getElement(element)).clear();
         
         await this.waitForLoadToComplete();
@@ -317,7 +328,7 @@ export class DriverExt {
     //#endregion
 
     //#region Javascript methods
-    async dispatchEvent(element: webdriver.By | webdriver.WebElement, event: string) {
+    async dispatchEvent(element: By | WebElement, event: string) {
         await this.driver.executeScript(
             "arguments[0].dispatchEvent(new Event('" + event + "', {bubbles:true}))", 
             await this.getElement(element))
@@ -325,7 +336,7 @@ export class DriverExt {
     //#endregion
 
     //#region WebElement state
-    async isDisplayed(element: webdriver.By | webdriver.WebElement) {
+    async isDisplayed(element: By | WebElement) {
         let displayed = false;
 
         try {
@@ -336,7 +347,7 @@ export class DriverExt {
         return displayed;
     }
     
-    async isEnabled(element: webdriver.By | webdriver.WebElement) {
+    async isEnabled(element: By | WebElement) {
         let enabled = false;
 
         try {
@@ -347,7 +358,7 @@ export class DriverExt {
         return enabled;
     }
     
-    async isSelected(element: webdriver.By | webdriver.WebElement) {
+    async isSelected(element: By | WebElement) {
         let selected = false;
 
         try {
@@ -377,7 +388,7 @@ export class DriverExt {
     async waitForPageToLoad(waitTime: number = this.implicitTimeout) {
         let driver = this.driver
 
-        await driver.wait(new webdriver.Condition("Exception thrown while waiting for page to load", 
+        await driver.wait(new Condition("Exception thrown while waiting for page to load", 
             async function() { return await driver.executeScript("return document.readyState").then(
                 (result) => { return result == "complete"});}), waitTime);
     }
@@ -386,7 +397,7 @@ export class DriverExt {
         let driver = this.driver
 
         for(let i = 0; i < 2; i++) {
-            await driver.wait(new webdriver.Condition("Exception thrown while waiting for Angular", 
+            await driver.wait(new Condition("Exception thrown while waiting for Angular", 
                 async function() { return await driver.executeScript("return !window.angular" 
                     + "|| (!!window.angular && !!angular.element(document).injector()"
                     + "&& angular.element(document).injector().get('$http').pendingRequests.length === 0);").then(
@@ -394,14 +405,14 @@ export class DriverExt {
         }
     }
 
-    async waitForElementToBePresent(element: webdriver.By, waitTime: number = this.implicitTimeout) {
+    async waitForElementToBePresent(element: By, waitTime: number = this.implicitTimeout) {
 
-        await this.driver.wait(webdriver.until.elementLocated(element), waitTime);
+        await this.driver.wait(until.elementLocated(element), waitTime);
 
         return this.getElement(element);
     }
 
-    async waitForElementNotToBePresent(element: webdriver.By, waitTime: number = this.implicitTimeout) {
+    async waitForElementNotToBePresent(element: By, waitTime: number = this.implicitTimeout) {
         let present = true;
 
         const {performance} = require('perf_hooks');
@@ -409,7 +420,7 @@ export class DriverExt {
 
         while(present) {
             try {
-                await this.driver.wait(webdriver.until.elementLocated(element), waitTime);
+                await this.driver.wait(until.elementLocated(element), waitTime);
 
                 if(performance.now() - initialTime > waitTime) {
                     break;
@@ -424,32 +435,32 @@ export class DriverExt {
         }
     }
 
-    async waitForElementToBeClickable(element: webdriver.By | webdriver.WebElement, waitTime: number = this.implicitTimeout) {
-        await this.driver.wait(webdriver.until.elementIsEnabled(await this.getElement(element)), waitTime);
+    async waitForElementToBeClickable(element: By | WebElement, waitTime: number = this.implicitTimeout) {
+        await this.driver.wait(until.elementIsEnabled(await this.getElement(element)), waitTime);
 
         return this.getElement(element);
     }
 
-    async waitForElementNotToBeClickable(element: webdriver.By | webdriver.WebElement, waitTime: number = this.implicitTimeout) {
-        await this.driver.wait(webdriver.until.elementIsDisabled(await this.getElement(element)), waitTime);
+    async waitForElementNotToBeClickable(element: By | WebElement, waitTime: number = this.implicitTimeout) {
+        await this.driver.wait(until.elementIsDisabled(await this.getElement(element)), waitTime);
 
         return this.getElement(element);
     }
 
-    async waitForElementToBeVisible(element: webdriver.By | webdriver.WebElement, waitTime: number = this.implicitTimeout) {
-        await this.driver.wait(webdriver.until.elementIsVisible(await this.getElement(element)), waitTime);
+    async waitForElementToBeVisible(element: By | WebElement, waitTime: number = this.implicitTimeout) {
+        await this.driver.wait(until.elementIsVisible(await this.getElement(element)), waitTime);
 
         return this.getElement(element);
     }
 
-    async waitForElementNotToBeVisible(element: webdriver.By | webdriver.WebElement, waitTime: number = this.implicitTimeout) {
-        await this.driver.wait(webdriver.until.elementIsNotVisible(await this.getElement(element)), waitTime);
+    async waitForElementNotToBeVisible(element: By | WebElement, waitTime: number = this.implicitTimeout) {
+        await this.driver.wait(until.elementIsNotVisible(await this.getElement(element)), waitTime);
 
         return this.getElement(element);
     }
 
-    async waitForAlertToBePresent(element: webdriver.By | webdriver.WebElement, waitTime: number = this.implicitTimeout) {        
-        await this.driver.wait(webdriver.until.alertIsPresent(), waitTime);
+    async waitForAlertToBePresent(element: By | WebElement, waitTime: number = this.implicitTimeout) {        
+        await this.driver.wait(until.alertIsPresent(), waitTime);
     }
 
     async wait(ms: number) {
@@ -458,7 +469,12 @@ export class DriverExt {
     //#endregion
 
     async takeScreenshot(screenshotName: string = new Date().getTime().toString()) {
-        let screenshotsFolder = "./" + properties.reports_folder + "/" + properties.screenshots_folder;
+        let screenshotsFolder = "./" + properties.reports_folder;
+
+        if (!fs.existsSync(screenshotsFolder)){
+            fs.mkdirSync(screenshotsFolder);
+        }
+        screenshotsFolder += "/" + properties.screenshots_folder;
 
         if (!fs.existsSync(screenshotsFolder)){
             fs.mkdirSync(screenshotsFolder);
