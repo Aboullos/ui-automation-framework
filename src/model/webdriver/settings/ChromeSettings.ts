@@ -1,4 +1,4 @@
-import { Capabilities } from 'selenium-webdriver';
+import { Browser } from 'selenium-webdriver';
 import { DriverSettings } from "./DriverSettings";
 import * as chrome from "selenium-webdriver/chrome"
 
@@ -6,8 +6,9 @@ export class ChromeSettings extends DriverSettings {
 
     constructor() {
         super();
-        this.capabilities = Capabilities.chrome();
+        
         this.createBuilder();
+        this.builder.forBrowser(Browser.CHROME);
     }
 
     setHeadless(value: boolean) {

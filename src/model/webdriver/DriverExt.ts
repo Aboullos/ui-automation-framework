@@ -1,7 +1,5 @@
-import { exception } from 'console';
 import * as fs from 'fs';
 import { properties } from "../../Constants";
-import { Capabilities, WebDriver, By, WebElement, Condition, until } from 'selenium-webdriver';
 import * as Constants from "../../Constants";
 import { DriverSettings } from './settings/DriverSettings';
 import { ChromeSettings } from './settings/ChromeSettings';
@@ -10,6 +8,7 @@ import { FirefoxSettings } from './settings/FirefoxSettings';
 import { IESettings } from './settings/IESettings';
 import { SafariSettings } from './settings/SafariSettings';
 import { AndroidSettings } from './settings/AndroidSettings';
+import { WebDriver, By, WebElement, Condition, until, Browser } from 'selenium-webdriver';
 
 export class DriverExt {
 
@@ -31,7 +30,7 @@ export class DriverExt {
     constructor(application: string, platform: string = Constants.DESKTOP) {
         this.application = application;
         this.platform = platform;
-        
+
         this.headless = properties.headless == undefined ? false : properties.headless;
 
         this.checkForAngular = properties.wait_for_angular == undefined ? true : properties.wait_for_angular;
@@ -43,7 +42,7 @@ export class DriverExt {
     }
 
     //#region Initializers
-    private initializeDriver() {
+    private async initializeDriver() {
         let settings = this.createSetting();
 
         settings.setHeadless(this.headless);
@@ -55,11 +54,11 @@ export class DriverExt {
         if(this.hub_url) {
             settings.setHubUrl(this.hub_url);
         }
+        
+        this.driver = await settings.build();
 
-        this.driver = settings.build();
-
-        this.setTimeouts();
-        this.maximizeWindow();
+        await this.setTimeouts();
+        await this.maximizeWindow();
     }
     
     createSetting() {
@@ -83,6 +82,37 @@ export class DriverExt {
         }
     
         return driverSettings;
+    }
+    //#endregion
+
+    //#region Navigation
+    async go(url: string) {
+        if(!this.driver) {
+            await this.initializeDriver();
+        }
+
+        await this.driver.get(url);
+        
+        await this.waitForLoadToComplete();
+    }
+
+    async refresh() {
+        await this.driver.navigate().refresh();
+    }
+
+    async back() {
+        await this.driver.navigate().back();
+    }
+
+    async forward() {
+        await this.driver.navigate().forward();
+    }
+
+    async quit() {
+        if(this.driver) {
+            await this.driver.quit();
+            this.driver = undefined;
+        }
     }
     //#endregion
 
@@ -204,7 +234,15 @@ export class DriverExt {
     }
 
     async getElementByText(text: string) {
-        return await this.driver.findElement(By.xpath("//*[contains(text(), '" + text + "')]"));
+        let result = undefined;
+
+        this.setTimeouts(3000);
+        try {
+            result = await this.driver.findElement(By.xpath("//*[contains(text(), '" + text + "')]"));
+        } catch(e) {}
+        this.setTimeouts();
+
+        return result;
     }
 
     async getElements(by: By) {
@@ -212,29 +250,42 @@ export class DriverExt {
     }
 
     async getElementChildByText(element: By, text: string) {
+        let result = undefined;
         let listElement = await this.driver.findElement(element);
 
         this.setTimeouts(3000);
-        let result = await listElement.findElement(By.xpath("//*[contains(text(), '" + text + "')]"));
+        try {
+            result = await listElement.findElement(By.xpath("//*[contains(text(), '" + text + "')]"));
+        } catch(e) {}
         this.setTimeouts();
 
         return result;
     }
 
     async getElementChildByAttribute(element: By, attribute: string, value: string) {
+        let result = undefined;
         let listElement = await this.driver.findElement(element);
 
         this.setTimeouts(3000);
-        let result = await listElement.findElement(By.css("[" + attribute + "='" + value + "')]"));
+        try {
+            result = await listElement.findElement(By.css("[" + attribute + "='" + value + "')]"));
+        } catch(e) {}
         this.setTimeouts();
 
         return result;
     }
 
     async getElementChildByAttributeContaining(element: By, attribute: string, value: string) {
+        let result = undefined;
         let listElement = await this.driver.findElement(element)
 
-        return await listElement.findElement(By.css("[" + attribute + "*='" + value + "')]"));
+        this.setTimeouts(3000);
+        try {
+            result = await listElement.findElement(By.css("[" + attribute + "*='" + value + "')]"));
+        } catch(e) {}
+        this.setTimeouts();
+
+        return result;
     }
 
     async getAttribute(element: By | WebElement, attribute: string) {
@@ -263,36 +314,6 @@ export class DriverExt {
 
     async removeElement(element: By | WebElement) {
         await this.driver.executeScript("arguments[0].remove()", await this.getElement(element));
-    }
-    //#endregion
-
-    //#region Navigation
-    async go(url: string) {
-        if(this.driver == undefined) {
-            this.initializeDriver();
-        }
-
-        await this.driver.get(url);
-        await this.waitForLoadToComplete();
-    }
-
-    async refresh() {
-        await this.driver.navigate().refresh();
-    }
-
-    async back() {
-        await this.driver.navigate().back();
-    }
-
-    async forward() {
-        await this.driver.navigate().forward();
-    }
-
-    async quit() {
-        if(this.driver) {
-            await this.driver.quit();
-            this.driver = undefined;
-        }
     }
     //#endregion
 
@@ -490,7 +511,9 @@ export class DriverExt {
         let logs = [];
 
         if(this.driver) {
-            logs = await this.driver.manage().logs().get("browser");
+            if(this.application == Browser.CHROME) {
+                logs = await this.driver.manage().logs().get("browser");
+            }
         }
 
         return logs;

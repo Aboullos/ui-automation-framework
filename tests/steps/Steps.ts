@@ -22,7 +22,7 @@ export class Steps extends PageObject {
         let loginPage = new LoginPage(this.testObject);
 
         (await loginPage.errorMessageIsDisplayed()).should.equals(true);
-        (await loginPage.getErrorMessage()).should.equals("Invalid username or password.");
+        (await loginPage.getErrorMessage()).should.equals(message);
     }
     //#endregion
 
@@ -50,9 +50,9 @@ export class Steps extends PageObject {
     //#endregion
 
     async checkNotificationMesage(message: string) {
-        let present = await new HeaderPage(this.testObject)
-            .checkNotificationPresence(message);
-        
+        let present = await (new HeaderPage(this.testObject)
+            .checkNotificationPresence(message))
+
         present.should.equals(true);
     }
 

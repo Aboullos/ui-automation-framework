@@ -47,7 +47,7 @@ export class TestObject {
             // Capturing logs
             let logs = await this.driver.getBrowserLogs();
 
-            if(logs) {
+            if(logs.length > 0) {
                 console.log("Printing console log:");
                 
                 for(let index in logs) {

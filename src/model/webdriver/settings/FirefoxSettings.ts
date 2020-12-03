@@ -1,4 +1,4 @@
-import * as webdriver from 'selenium-webdriver';
+import { Browser } from 'selenium-webdriver';
 import { DriverSettings } from "./DriverSettings";
 import * as firefox from "selenium-webdriver/firefox"
 
@@ -6,8 +6,9 @@ export class FirefoxSettings extends DriverSettings {
 
     constructor() {
         super();
-        this.capabilities = webdriver.Capabilities.firefox();
+        
         this.createBuilder();
+        this.builder.forBrowser(Browser.FIREFOX);
     }
 
     setHeadless(value: boolean) {

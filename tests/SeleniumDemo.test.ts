@@ -3,6 +3,7 @@ import { TestObject } from "../src/model/TestObject";
 import * as Constants from "../src/Constants";
 import { Steps } from './steps/Steps';
 import { IHash } from '../src/model/utils/Utils';
+import { SSL_OP_EPHEMERAL_RSA } from 'constants';
 
 should();
 

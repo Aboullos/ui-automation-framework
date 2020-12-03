@@ -6,8 +6,7 @@ export class DriverSettings {
     capabilities: {} | Capabilities;
 
     protected createBuilder() {
-        this.builder = new Builder()
-            .withCapabilities(this.capabilities);
+        this.builder = new Builder();
     }
 
     getCapabilities() {
