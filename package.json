@@ -4,7 +4,7 @@
   "description": "PoC Selenium with Typescript",
   "main": "index.js",
   "scripts": {
-    "test": "npx tsc && ./node_modules/mocha/bin/_mocha lib/tests/**/*.test.js --reporter mochawesome --reporter-options reportDir=reports --no-timeouts"
+    "test": "npx tsc && ./node_modules/mocha/bin/_mocha lib/tests/**/*.test.js -R mocha-junit-reporter --reporter-options mochaFile=./reports/mocha-junit-report-[hash].xml --no-timeouts"
   },
   "resolutions": {
     "graceful-fs": "^4.2.4"
@@ -18,19 +18,23 @@
   ],
   "dependencies": {
     "@types/selenium-webdriver": "^4.0.9",
+    "beautiful-dom": "^1.0.8",
     "typescript": "^4.0.5"
   },
   "devDependencies": {
+    "@types/bent": "^7.3.2",
     "@types/chai": "^4.0.5",
     "@types/mocha": "^2.2.44",
     "@types/node": "^12.12.68",
     "@types/webdriverio": "^4.13.3",
+    "appium": "^1.18.3",
+    "bent": "^7.3.12",
     "chai": "^4.1.2",
     "del": "^3.0.0",
     "graceful-fs": "^4.2.4",
     "mocha": "^4.0.1",
+    "mocha-junit-reporter": "^2.0.0",
     "mochawesome": "^2.3.1",
-    "selenium-webdriver": "^3.6.0",
-    "appium": "^1.18.3"
+    "selenium-webdriver": "^3.6.0"
   }
 }

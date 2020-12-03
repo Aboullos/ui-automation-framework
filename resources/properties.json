@@ -2,5 +2,11 @@
     "keycloak_url": "http://localhost:8080",
     "admin_console_path": "",
     "screenshots_folder": "screenshots",
-    "reports_folder": "reports"
+    "reports_folder": "reports",
+    "htmls_folder": "htmls",
+    "headless": false,
+    "default_browser": "chrome",
+    "wait_for_angular": true,
+    "implicit_timeout": 60000,
+    "page_load_timeout": 60000
 }

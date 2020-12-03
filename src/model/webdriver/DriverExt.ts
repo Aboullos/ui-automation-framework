@@ -1,6 +1,6 @@
 import { exception } from 'console';
 import * as fs from 'fs';
-import { properties } from "./../../Constants";
+import { properties } from "../../Constants";
 import { Capabilities, WebDriver, By, WebElement, Condition, until } from 'selenium-webdriver';
 import * as Constants from "../../Constants";
 import { DriverSettings } from './settings/DriverSettings';
@@ -22,16 +22,24 @@ export class DriverExt {
     private pageLoadTimeout = 60000;
     private scriptTimeout = 20000;
 
-    private headless: boolean = false;
-    private checkForAngular: boolean = true;
-    private checkForPageToLoad: boolean = true;
+    private headless: boolean;
+    private checkForAngular: boolean;
+    private checkForPageToLoad: boolean;
 
     private driver: WebDriver;
-    private capabilities: Capabilities;
 
     constructor(application: string, platform: string = Constants.DESKTOP) {
         this.application = application;
         this.platform = platform;
+        
+        this.headless = properties.headless == undefined ? false : properties.headless;
+
+        this.checkForAngular = properties.wait_for_angular == undefined ? true : properties.wait_for_angular;
+        this.checkForPageToLoad = properties.wait_for_page_load == undefined ? true : properties.wait_for_page_load;
+
+        this.implicitTimeout = properties.implicit_timeout == undefined ? 60000 : properties.implicit_timeout;
+        this.pageLoadTimeout = properties.page_load_timeout == undefined ? 60000 : properties.page_load_timeout;
+        this.scriptTimeout = properties.script_timeout == undefined ? 20000 : properties.script_timeout;
     }
 
     //#region Initializers
@@ -88,7 +96,13 @@ export class DriverExt {
     }
 
     async getSource() {
-        return await this.driver.getPageSource();
+        let source = '';
+
+        if(this.driver) {
+            source = await this.driver.getPageSource();
+        }
+
+        return source;
     }
 
     async getWindowSize() {
@@ -187,6 +201,10 @@ export class DriverExt {
         }
 
         return element;
+    }
+
+    async getElementByText(text: string) {
+        return await this.driver.findElement(By.xpath("//*[contains(text(), '" + text + "')]"));
     }
 
     async getElements(by: By) {
@@ -468,12 +486,33 @@ export class DriverExt {
     }
     //#endregion
 
+    async getBrowserLogs() {
+        let logs = [];
+
+        if(this.driver) {
+            logs = await this.driver.manage().logs().get("browser");
+        }
+
+        return logs;
+    }
+
+    async getDriverLogs() {
+        let logs = [];
+
+        if(this.driver) {
+            logs = await this.driver.manage().logs().get("driver");
+        }
+
+        return logs;
+    }
+
     async takeScreenshot(screenshotName: string = new Date().getTime().toString()) {
         let screenshotsFolder = "./" + properties.reports_folder;
 
         if (!fs.existsSync(screenshotsFolder)){
             fs.mkdirSync(screenshotsFolder);
         }
+
         screenshotsFolder += "/" + properties.screenshots_folder;
 
         if (!fs.existsSync(screenshotsFolder)){
@@ -484,7 +523,7 @@ export class DriverExt {
             await this.driver.takeScreenshot().then((data) => {
                 let screenshotPath = `${screenshotsFolder}/${screenshotName}.png`;
     
-                console.log(`Saving Screenshot as: ${screenshotPath}`);
+                console.log(`Saving screenshot as: ${screenshotPath}`);
                 return fs.writeFileSync(screenshotPath, data, 'base64');
             });
         }

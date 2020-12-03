@@ -1,5 +1,5 @@
 import { By }  from 'selenium-webdriver';
-import { PageObject } from "../../../src/objects/PageObject";
+import { PageObject } from "../../../src/model/PageObject";
 
 export class SidebarPage extends PageObject {
 

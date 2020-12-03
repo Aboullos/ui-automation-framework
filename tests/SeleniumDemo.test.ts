@@ -1,11 +1,8 @@
 import { should } from 'chai';
-import { LoginPage } from "./pages/LoginPage";
-import { SidebarPage } from "./pages/admin_console/SidebarPage";
-import { TestObject } from "../src/objects/TestObject";
+import { TestObject } from "../src/model/TestObject";
 import * as Constants from "../src/Constants";
-import { HeaderPage } from './pages/admin_console/HeaderPage';
 import { Steps } from './steps/Steps';
-import { doesNotReject } from 'assert';
+import { IHash } from '../src/model/utils/Utils';
 
 should();
 
@@ -13,11 +10,12 @@ describe('Selenium Demo Test Suite', function () {
     
     let steps: Steps;
     let testObject: TestObject;
+    let testData: IHash;
     
-    beforeEach(function () {
+    beforeEach(async function () {
         testObject = new TestObject();
         steps = new Steps(testObject);
-        
+
         testObject.createDriver(Constants.CHROME);
     });
 
@@ -34,7 +32,7 @@ describe('Selenium Demo Test Suite', function () {
     it('should fail creating Master realm', async function () {
         await steps.logIn();
 
-        await steps.createRealm("Master");
+        await steps.createRealm("master");
         await steps.checkNotificationMesage("Error: Conflict detected. See logs for details");
     });
 

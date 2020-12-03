@@ -1,5 +1,5 @@
-import { PageObject } from "../../src/objects/PageObject";
-import { TestObject } from "../../src/objects/TestObject";
+import { PageObject } from "../../src/model/PageObject";
+import { TestObject } from "../../src/model/TestObject";
 import { CreateRealmPage } from "../pages/admin_console/CreateRealmPage";
 import { HeaderPage } from "../pages/admin_console/HeaderPage";
 import { SidebarPage } from "../pages/admin_console/SidebarPage";
@@ -22,7 +22,7 @@ export class Steps extends PageObject {
         let loginPage = new LoginPage(this.testObject);
 
         (await loginPage.errorMessageIsDisplayed()).should.equals(true);
-        (await loginPage.getErrorMessage()).should.equals("Invalid username or password.");   
+        (await loginPage.getErrorMessage()).should.equals("Invalid username or password.");
     }
     //#endregion
 
