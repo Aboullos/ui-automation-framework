@@ -8,7 +8,8 @@ import { FirefoxSettings } from './settings/FirefoxSettings';
 import { IESettings } from './settings/IESettings';
 import { SafariSettings } from './settings/SafariSettings';
 import { AndroidSettings } from './settings/AndroidSettings';
-import { WebDriver, By, WebElement, Condition, until, Browser } from 'selenium-webdriver';
+import { WebDriver, By, WebElement, Condition, until, Browser, IWebDriverOptionsCookie } from 'selenium-webdriver';
+import { Command } from 'selenium-webdriver/lib/command';
 
 export class DriverExt {
 
@@ -372,6 +373,12 @@ export class DriverExt {
             "arguments[0].dispatchEvent(new Event('" + event + "', {bubbles:true}))", 
             await this.getElement(element))
     }
+
+    async triggerAngularEvent(element: By | WebElement, event: string) {
+        await this.driver.executeScript(
+            "angular.element(arguments[0]).triggerHandler('" + event + "')", 
+            await this.getElement(element))
+    }
     //#endregion
 
     //#region WebElement state
@@ -507,6 +514,175 @@ export class DriverExt {
     }
     //#endregion
 
+    //#region Cookies
+    async getCookie(cookie: string) {
+        return await this.driver.manage().getCookie(cookie);
+    }
+    
+    async getCookies() {
+        return await this.driver.manage().getCookies();
+    }
+    
+    async addCookie(cookie: IWebDriverOptionsCookie) {
+        await this.driver.manage().addCookie(cookie);
+    }
+    
+    async addCookies(cookies: IWebDriverOptionsCookie[]) {
+        for(let index in cookies) {
+            this.addCookie(cookies[index]);
+        }
+    }
+
+    async deleteCookie(cookie: string) {
+        return await this.driver.manage().deleteCookie(cookie);
+    }
+    
+    async deleteAllCookies() {
+        return await this.driver.manage().deleteAllCookies();
+    }
+    //#endregion
+
+    //#region Window
+    async closeTab() {
+        await this.driver.close();
+    }
+
+    async getCurrentWindow() {
+        return await this.driver.getWindowHandle();
+    }
+
+    async getWindowHandles() {
+        return await this.driver.getAllWindowHandles();
+    }
+
+    async createNewTab() {
+        await this.driver.switchTo().newWindow('tab');
+    }
+
+    async createNewWindow() {
+        await this.driver.switchTo().newWindow('window');
+    }
+
+    async switchToWindow(window: string) {
+        await this.driver.switchTo().window(window);
+    }
+
+    async switchToNextWindow() {
+        let currentWindow = await this.getCurrentWindow();
+        let windowHandles = await this.getWindowHandles();
+        let nextWindowHandle = currentWindow;
+
+        for(let i = 0; i < windowHandles.length; i++) {
+            if(windowHandles[i] == currentWindow) {
+                if(i + 1 != windowHandles.length) {
+                    nextWindowHandle = windowHandles[i + 1];
+                } else {
+                    nextWindowHandle = windowHandles[0];
+                }
+
+                break;
+            }
+        }
+
+        await this.switchToWindow(nextWindowHandle);
+    }
+
+    async switchToPreviousWindow() {
+        let currentWindow = await this.getCurrentWindow();
+        let windowHandles = await this.getWindowHandles();
+        let previousWindowHandle = currentWindow;
+
+        for(let i = 0; i < windowHandles.length; i++) {
+            if(windowHandles[i] == currentWindow) {
+                if(i == 0) {
+                    previousWindowHandle = windowHandles[windowHandles.length - 1];
+                } else {
+                    previousWindowHandle = windowHandles[i - 1];
+                }
+
+                break;
+            }
+        }
+
+        await this.switchToWindow(previousWindowHandle);
+    }
+    //#endregion
+
+    //#region Alert handling
+    async acceptAlert() {
+        await (await this.driver.switchTo().alert()).accept();
+    }
+    
+    async dismissAlert() {
+        await (await this.driver.switchTo().alert()).dismiss();
+    }
+    
+    async getAlertText() {
+        let result: string;
+        
+        try {
+            result = await (await this.driver.switchTo().alert()).getText();
+        } catch(e) {}
+
+        return result;
+    }
+    
+    async authenticateAs(username: string, password: string) {
+        await (await this.driver.switchTo().alert()).authenticateAs(username, password);
+    }
+    
+    async writeInAlert(text: string) {
+        await (await this.driver.switchTo().alert()).sendKeys(text);
+    }
+    //#endregion
+
+    //#region Network
+    async networkOnline(state: boolean) {
+        let networkCommand = new Command('setNetworkConditions');
+        networkCommand.setParameter('network_conditions', {
+            "offline": state});
+
+        await this.driver.execute(networkCommand);
+    }
+
+    async getNetworkConditions() {
+        return await this.driver.execute(new Command('getNetworkConditions'));
+    }
+
+    async setNetwork(name: string) {
+        let networkCommand = new Command('setNetworkConditions');
+        networkCommand.setParameter('network_name', name);
+
+        await this.driver.execute(networkCommand);
+    }
+
+    async setNetworkConditions(latency: number, downloadThroughput: number, upload_throughput: number) {
+        let networkCommand = new Command('setNetworkConditions');
+        networkCommand.setParameter('network_conditions', {
+            "offline": false,
+            "latency": latency,
+            "download_throughput": downloadThroughput * 1024,
+            "upload_throughput": upload_throughput * 1024});
+
+        await this.driver.execute(networkCommand);
+    }
+    //#endregion
+
+    //#region Frames
+    async switchToFrame(element: By | WebElement) {
+        await this.driver.switchTo().frame(await this.getElement(element));
+    }
+
+    async exitFrames() {
+        await this.driver.switchTo().defaultContent();
+    }
+
+    async switchToParentFrame() {
+        await this.driver.switchTo().parentFrame();
+    }
+    //#endregion
+
+    //#region Debugging
     async getBrowserLogs() {
         let logs = [];
 
@@ -551,4 +727,5 @@ export class DriverExt {
             });
         }
     }
+    //#endregion
 }

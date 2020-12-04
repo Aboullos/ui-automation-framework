@@ -11,6 +11,7 @@ export class Steps extends PageObject {
     async logIn(userName: string = "admin", password: string = "admin") {
         let loginPage = new LoginPage(this.testObject);
 
+
         if(!await loginPage.isLogInPage()) {
             await new HeaderPage(this.testObject).goToAdminConsole();
         }

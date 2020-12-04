@@ -17,7 +17,7 @@ describe('Selenium Demo Test Suite', function () {
         testObject = new TestObject();
         steps = new Steps(testObject);
 
-        testObject.createDriver(Constants.CHROME);
+        testObject.createDriver(Constants.FIREFOX);
     });
 
     it('should login to Keycloak', async function () {
